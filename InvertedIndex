@@ -1,0 +1,34 @@
+import org.apache.spark.SparkContext
+import scala.collection.mutable._
+
+/**
+ * Created by Administrator on 2014/8/16.
+ * 构建倒排所索引
+ */
+object InvertedIndex {
+  def main(args : Array[String]) {
+    val skewedTable = left.execute()
+    val spark = new SparkContext("local", "TopK",
+      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
+    //读取数据，数据格式为一个大的HDFS文件中用\n分隔不同的文件，用\t分隔文件id和文件内容，
+    //用" "分隔文件内的词汇。
+    val words = spark.textFile("dir").map(file => file.split("\t")).map(item => {
+      (item(0), item(1))
+    }).flatMap(file => {
+      //将数据项转换为LinkedList[(词， 文档id)]的数据项，并通过flatmap将RDD内的数据项转换为(词， 文档id)
+      val list = new LinkedList[(String, String)]
+      val words = file._2.split(" ").iterator
+      while(words.hasNext) {
+        list+words.next()
+      }
+      list
+    }).distinct()
+    //将（词，文档id）的数据进行聚集，相同的词对应的文档id统计到一起，形成
+    //(词， "文档id1，文档id2 ，文档id3 . . .")形成简单的倒排索引。
+    words.map(word => {
+      (word._2, word._1)
+    }).reduce((a, b) => {
+      a+"\t"+b
+    }).saveAsTextFile("index")
+  }
+}
