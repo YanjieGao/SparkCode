@@ -2,6 +2,7 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
 /**
  * Created by v-yanjga on 8/15/2014.
+ * 海量数据求中位数
  */
 object Median {
   def main(args: Array[String]) {
