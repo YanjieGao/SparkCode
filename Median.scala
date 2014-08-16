@@ -35,7 +35,7 @@ object Median {
     val offset = temp - mid
     //获取到中位数所在桶中的的偏移量为offset的数，也就是中位数
     val result = mappeddata.filter(num => num._1 == index ).takeOrdered(offset)
-    println("Median is " + result )
+    println("Median is " + result(offset))
     spark.stop()
   }
 }
